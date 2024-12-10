@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:spotify_clone/common/widgets/button/basic_app_button.dart';
+import 'package:spotify_clone/common/widgets/button/mode_button.dart';
 import 'package:spotify_clone/core/configs/assets/app_images.dart';
 import 'package:spotify_clone/core/configs/assets/app_vectors.dart';
 import 'package:spotify_clone/core/configs/theme/app_color.dart';
-import 'package:spotify_clone/presentation/mode/pages/choose_mode.dart';
+import 'package:spotify_clone/main.dart';
+import 'package:spotify_clone/presentation/mode/bloc/theme_cubit.dart';
 
-class GetStartedPage extends StatelessWidget {
-  const GetStartedPage({super.key});
+class ChooseMode extends StatelessWidget {
+  const ChooseMode({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +23,7 @@ class GetStartedPage extends StatelessWidget {
               image: DecorationImage(
                 fit: BoxFit.fill,
                 image: AssetImage(
-                  AppImages.introBG,
+                  AppImages.modeBG,
                 ),
               ),
             ),
@@ -40,37 +43,44 @@ class GetStartedPage extends StatelessWidget {
                 ),
                 const Spacer(),
                 const Text(
-                  "Enjoy Listening to Music",
+                  'Choose Mode',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(
-                  height: 21,
-                ),
-                const Text(
-                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sagittis enim purus sed phasellus. Cursus ornare id scelerisque aliquam.",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
                     color: AppColor.grey,
-                    fontSize: 13,
+                    fontSize: 22,
                   ),
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: 50,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ModeButton(
+                      onPressed: () {
+                        context.read<ThemeCubit>().updateTheme(ThemeMode.dark);
+                      },
+                      title: "Dark Mode",
+                      mode: AppVectors.dark,
+                    ),
+                    const SizedBox(
+                      width: 60,
+                    ),
+                    ModeButton(
+                      onPressed: () {
+                        context.read<ThemeCubit>().updateTheme(ThemeMode.light);
+                      },
+                      title: "Light Mode",
+                      mode: AppVectors.light,
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 70,
                 ),
                 BasicAppButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (BuildContext context) => ChooseMode()),
-                    );
-                  },
-                  title: "Get Started",
+                  onPressed: () {},
+                  title: "Continue",
                 ),
                 const SizedBox(
                   height: 20,
