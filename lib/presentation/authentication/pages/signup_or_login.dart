@@ -3,10 +3,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:spotify_clone/common/helpers/is_dark_mode.dart';
+import 'package:spotify_clone/common/widgets/appbar/appbar.dart';
 import 'package:spotify_clone/common/widgets/button/basic_app_button.dart';
 import 'package:spotify_clone/core/configs/assets/app_images.dart';
 import 'package:spotify_clone/core/configs/assets/app_vectors.dart';
 import 'package:spotify_clone/core/configs/theme/app_color.dart';
+import 'package:spotify_clone/presentation/authentication/pages/SigninPage.dart';
+import 'package:spotify_clone/presentation/authentication/pages/registerPage.dart';
 
 class SignupOrLogin extends StatelessWidget {
   const SignupOrLogin({super.key});
@@ -16,6 +19,7 @@ class SignupOrLogin extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
+          const BasicAppbar(),
           Align(
             alignment: Alignment.topRight,
             child: SvgPicture.asset(
@@ -56,12 +60,13 @@ class SignupOrLogin extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Text(
+                  Text(
                     "Spotify is a proprietary Swedish audio streaming and media services provider",
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w300,
-                      color: AppColor.darkGrey,
+                      color:
+                          context.isDarkMode ? Colors.white : AppColor.darkGrey,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -72,16 +77,29 @@ class SignupOrLogin extends StatelessWidget {
                     children: [
                       Expanded(
                         flex: 1,
-                        child:
-                            BasicAppButton(onPressed: () {}, title: "Register"),
+                        child: BasicAppButton(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const RegisterPage()));
+                            },
+                            title: "Register"),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 20,
                       ),
                       Expanded(
                         flex: 1,
                         child: TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const Signinpage()));
+                            },
                             child: Text(
                               "Sign In",
                               style: TextStyle(
@@ -97,35 +115,6 @@ class SignupOrLogin extends StatelessWidget {
                   )
                 ],
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 40),
-            child: Column(
-              children: [
-                ClipOval(
-                  child: Material(
-                    color: AppColor.modeColor.withOpacity(0.1),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: const SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: Icon(
-                            Icons.arrow_back_ios,
-                            color: Colors.black,
-                            size: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
         ],
