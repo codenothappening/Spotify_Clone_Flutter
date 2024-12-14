@@ -8,4 +8,5 @@ class AppImages {
   static const String googleImage = basePath + 'Google.png';
   static const String appleImage = basePath + 'Apple.png';
   static const String appleImageDark = basePath + "DarkApple.png";
+  static const String homePageTop = basePath + "homepagetop.png";
 }

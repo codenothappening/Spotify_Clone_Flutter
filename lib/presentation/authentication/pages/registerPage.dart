@@ -9,6 +9,7 @@ import 'package:spotify_clone/core/configs/assets/app_vectors.dart';
 import 'package:spotify_clone/presentation/authentication/pages/SigninPage.dart';
 
 import '../../../core/configs/theme/app_color.dart';
+import '../../home/pages/homepage.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
@@ -87,7 +88,13 @@ class RegisterPage extends StatelessWidget {
                     height: 30,
                   ),
                   BasicAppButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (BuildContext context) => Homepage(),
+                          ));
+                    },
                     title: "Create Account",
                     height: 80,
                   ),
