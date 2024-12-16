@@ -129,7 +129,7 @@ class Signinpage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 30,
                   ),
                   Row(
@@ -159,13 +159,13 @@ class Signinpage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Not A Member?"),
+                      const Text("Not A Member?"),
                       TextButton(
                         onPressed: () {
                           Navigator.pushReplacement(
