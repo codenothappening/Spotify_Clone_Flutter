@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:spotify_clone/common/helpers/is_dark_mode.dart';
 import 'package:spotify_clone/common/widgets/appbar/appbar.dart';
@@ -7,12 +8,65 @@ import 'package:spotify_clone/common/widgets/form/form_filling.dart';
 import 'package:spotify_clone/core/configs/assets/app_images.dart';
 import 'package:spotify_clone/core/configs/assets/app_vectors.dart';
 import 'package:spotify_clone/presentation/authentication/pages/SigninPage.dart';
+import 'package:spotify_clone/presentation/mode/bloc/authenticationEvent.dart';
+import 'package:spotify_clone/presentation/mode/bloc/authentication_bloc.dart';
+import 'package:spotify_clone/presentation/mode/bloc/authentication_state.dart';
 
 import '../../../core/configs/theme/app_color.dart';
 import '../../home/pages/homepage.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final fullNameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    fullNameController.dispose();
+    super.dispose();
+  }
+
+  void _registerUser(BuildContext context) {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final fullName = fullNameController.text.trim();
+
+    print("Password Entered : $password");
+
+    if (password.length < 6) {
+      // Show weak password error
+      showDialog(
+        context: context,
+        builder: (context) => const AlertDialog(
+          title: Text("Weak Password"),
+          content: Text("Password should be at least 6 characters long."),
+        ),
+      );
+    } else if (email.isEmpty || !email.contains('@')) {
+      // Show email validation error
+      showDialog(
+        context: context,
+        builder: (context) => const AlertDialog(
+          title: Text("Invalid Email"),
+          content: Text("Please enter a valid email address."),
+        ),
+      );
+    } else {
+      // Dispatch event to register user
+      BlocProvider.of<AuthenticationBloc>(context).add(
+        SignUpUser(email, password, fullName),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,19 +120,22 @@ class RegisterPage extends StatelessWidget {
                   const SizedBox(
                     height: 20,
                   ),
-                  const FormFilling(
+                  FormFilling(
+                    controller: fullNameController,
                     hintText: 'Full Name',
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  const FormFilling(
+                  FormFilling(
+                    controller: emailController,
                     hintText: 'Enter Email',
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  const FormFilling(
+                  FormFilling(
+                    controller: passwordController,
                     hintText: 'Password',
                   ),
                   const SizedBox(
@@ -87,16 +144,33 @@ class RegisterPage extends StatelessWidget {
                   const SizedBox(
                     height: 30,
                   ),
-                  BasicAppButton(
-                    onPressed: () {
-                      Navigator.push(
+                  BlocConsumer<AuthenticationBloc, AuthenticationState>(
+                    listener: (context, state) {
+                      if (state is AuthenticationSuccessState) {
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (BuildContext context) => Homepage(),
-                          ));
+                            builder: (context) => Homepage(),
+                          ),
+                        );
+                      } else if (state is AuthenticationFailureState) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text("Error"),
+                            content: Text(
+                                state.errorMessage ?? "Unknown error occurred"),
+                          ),
+                        );
+                      }
                     },
-                    title: "Create Account",
-                    height: 80,
+                    builder: (context, state) {
+                      return BasicAppButton(
+                        onPressed: () => _registerUser(context),
+                        title: "Create Account",
+                        height: 80,
+                      );
+                    },
                   ),
                   const SizedBox(
                     height: 30,

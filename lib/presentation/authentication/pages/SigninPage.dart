@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:spotify_clone/common/helpers/is_dark_mode.dart';
 import 'package:spotify_clone/common/widgets/appbar/appbar.dart';
@@ -8,11 +9,28 @@ import 'package:spotify_clone/core/configs/assets/app_images.dart';
 import 'package:spotify_clone/core/configs/assets/app_vectors.dart';
 import 'package:spotify_clone/core/configs/theme/app_color.dart';
 import 'package:spotify_clone/presentation/authentication/pages/registerPage.dart';
+import 'package:spotify_clone/presentation/home/pages/homepage.dart';
+import 'package:spotify_clone/presentation/mode/bloc/authenticationEvent.dart';
+import 'package:spotify_clone/presentation/mode/bloc/authentication_bloc.dart';
+import 'package:spotify_clone/presentation/mode/bloc/authentication_state.dart';
 
-class Signinpage extends StatelessWidget {
+class Signinpage extends StatefulWidget {
   const Signinpage({super.key});
 
   @override
+  State<Signinpage> createState() => _SigninpageState();
+}
+
+class _SigninpageState extends State<Signinpage> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
@@ -64,13 +82,15 @@ class Signinpage extends StatelessWidget {
                   const SizedBox(
                     height: 20,
                   ),
-                  const FormFilling(
+                  FormFilling(
+                    controller: emailController,
                     hintText: 'Username or Email',
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  const FormFilling(
+                  FormFilling(
+                    controller: passwordController,
                     hintText: 'Password',
                   ),
                   const SizedBox(
@@ -94,10 +114,60 @@ class Signinpage extends StatelessWidget {
                   const SizedBox(
                     height: 30,
                   ),
-                  BasicAppButton(
-                    onPressed: () {},
-                    title: "Sign In",
-                    height: 80,
+                  BlocConsumer<AuthenticationBloc, AuthenticationState>(
+                    listener: (context, state) {
+                      if (state is AuthenticationSuccessState) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Homepage(),
+                          ),
+                        );
+                      } else if (state is AuthenticationFailureState) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                              title: const Text("Error"),
+                              content: Text(state.errorMessage ??
+                                  "Unknown Error message"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("OK"),
+                                ),
+                              ]),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is AuthenticationLoadingState) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      return BasicAppButton(
+                        onPressed: () {
+                          final email = emailController.text.trim();
+                          final password = passwordController.text.trim();
+
+                          if (email.isEmpty || password.isEmpty) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const AlertDialog(
+                                title: Text("Error"),
+                                content:
+                                    Text("Email and Password are required."),
+                              ),
+                            );
+                            return;
+                          }
+                          BlocProvider.of<AuthenticationBloc>(context)
+                              .add(SignInUser(email, password));
+                        },
+                        title: "Sign In",
+                        height: 80,
+                      );
+                    },
                   ),
                   const SizedBox(
                     height: 30,
