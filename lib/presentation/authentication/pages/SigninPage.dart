@@ -8,11 +8,14 @@ import 'package:spotify_clone/common/widgets/form/form_filling.dart';
 import 'package:spotify_clone/core/configs/assets/app_images.dart';
 import 'package:spotify_clone/core/configs/assets/app_vectors.dart';
 import 'package:spotify_clone/core/configs/theme/app_color.dart';
+import 'package:spotify_clone/data/models/auth/signin_user_req.dart';
+import 'package:spotify_clone/domain/usecases/domain/signin.dart';
 import 'package:spotify_clone/presentation/authentication/pages/registerPage.dart';
 import 'package:spotify_clone/presentation/home/pages/homepage.dart';
-import 'package:spotify_clone/presentation/mode/bloc/authenticationEvent.dart';
-import 'package:spotify_clone/presentation/mode/bloc/authentication_bloc.dart';
-import 'package:spotify_clone/presentation/mode/bloc/authentication_state.dart';
+import 'package:spotify_clone/presentation/authentication/bloc/authenticationEvent.dart';
+import 'package:spotify_clone/presentation/authentication/bloc/authentication_bloc.dart';
+import 'package:spotify_clone/presentation/authentication/bloc/authentication_state.dart';
+import 'package:spotify_clone/serviceLocator.dart';
 
 class Signinpage extends StatefulWidget {
   const Signinpage({super.key});
@@ -114,60 +117,30 @@ class _SigninpageState extends State<Signinpage> {
                   const SizedBox(
                     height: 30,
                   ),
-                  BlocConsumer<AuthenticationBloc, AuthenticationState>(
-                    listener: (context, state) {
-                      if (state is AuthenticationSuccessState) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Homepage(),
-                          ),
-                        );
-                      } else if (state is AuthenticationFailureState) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                              title: const Text("Error"),
-                              content: Text(state.errorMessage ??
-                                  "Unknown Error message"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text("OK"),
-                                ),
-                              ]),
-                        );
-                      }
-                    },
-                    builder: (context, state) {
-                      if (state is AuthenticationLoadingState) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                      return BasicAppButton(
-                        onPressed: () {
-                          final email = emailController.text.trim();
-                          final password = passwordController.text.trim();
-
-                          if (email.isEmpty || password.isEmpty) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => const AlertDialog(
-                                title: Text("Error"),
-                                content:
-                                    Text("Email and Password are required."),
-                              ),
-                            );
-                            return;
-                          }
-                          BlocProvider.of<AuthenticationBloc>(context)
-                              .add(SignInUser(email, password));
+                  BasicAppButton(
+                    onPressed: () async {
+                      var result = await sl<SignInUseCase>().call(
+                          params: SigninUserReq(
+                        email: emailController.text.toString(),
+                        password: passwordController.text.toString(),
+                      ));
+                      result.fold(
+                        (l) {
+                          var snackbar = SnackBar(content: Text(l));
+                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
                         },
-                        title: "Sign In",
-                        height: 80,
+                        (r) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                                builder: (BuildContext context) => Homepage()),
+                            (route) => false,
+                          );
+                        },
                       );
                     },
+                    title: "Sign In",
+                    height: 80,
                   ),
                   const SizedBox(
                     height: 30,

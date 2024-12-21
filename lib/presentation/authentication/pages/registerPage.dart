@@ -7,10 +7,13 @@ import 'package:spotify_clone/common/widgets/button/basic_app_button.dart';
 import 'package:spotify_clone/common/widgets/form/form_filling.dart';
 import 'package:spotify_clone/core/configs/assets/app_images.dart';
 import 'package:spotify_clone/core/configs/assets/app_vectors.dart';
+import 'package:spotify_clone/data/models/auth/create_user_request.dart';
+import 'package:spotify_clone/domain/usecases/domain/signup.dart';
 import 'package:spotify_clone/presentation/authentication/pages/SigninPage.dart';
-import 'package:spotify_clone/presentation/mode/bloc/authenticationEvent.dart';
-import 'package:spotify_clone/presentation/mode/bloc/authentication_bloc.dart';
-import 'package:spotify_clone/presentation/mode/bloc/authentication_state.dart';
+import 'package:spotify_clone/presentation/authentication/bloc/authenticationEvent.dart';
+import 'package:spotify_clone/presentation/authentication/bloc/authentication_bloc.dart';
+import 'package:spotify_clone/presentation/authentication/bloc/authentication_state.dart';
+import 'package:spotify_clone/serviceLocator.dart';
 
 import '../../../core/configs/theme/app_color.dart';
 import '../../home/pages/homepage.dart';
@@ -35,38 +38,38 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _registerUser(BuildContext context) {
-    final email = emailController.text.trim();
-    final password = passwordController.text.trim();
-    final fullName = fullNameController.text.trim();
+  // void _registerUser(BuildContext context) {
+  //   final email = emailController.text.trim();
+  //   final password = passwordController.text.trim();
+  //   final fullName = fullNameController.text.trim();
 
-    print("Password Entered : $password");
+  //   print("Password Entered : $password");
 
-    if (password.length < 6) {
-      // Show weak password error
-      showDialog(
-        context: context,
-        builder: (context) => const AlertDialog(
-          title: Text("Weak Password"),
-          content: Text("Password should be at least 6 characters long."),
-        ),
-      );
-    } else if (email.isEmpty || !email.contains('@')) {
-      // Show email validation error
-      showDialog(
-        context: context,
-        builder: (context) => const AlertDialog(
-          title: Text("Invalid Email"),
-          content: Text("Please enter a valid email address."),
-        ),
-      );
-    } else {
-      // Dispatch event to register user
-      BlocProvider.of<AuthenticationBloc>(context).add(
-        SignUpUser(email, password, fullName),
-      );
-    }
-  }
+  //   if (password.length < 6) {
+  //     // Show weak password error
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) => const AlertDialog(
+  //         title: Text("Weak Password"),
+  //         content: Text("Password should be at least 6 characters long."),
+  //       ),
+  //     );
+  //   } else if (email.isEmpty || !email.contains('@')) {
+  //     // Show email validation error
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) => const AlertDialog(
+  //         title: Text("Invalid Email"),
+  //         content: Text("Please enter a valid email address."),
+  //       ),
+  //     );
+  //   } else {
+  //     // Dispatch event to register user
+  //     BlocProvider.of<AuthenticationBloc>(context).add(
+  //       SignUpUser(email, password, fullName),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -144,33 +147,31 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(
                     height: 30,
                   ),
-                  BlocConsumer<AuthenticationBloc, AuthenticationState>(
-                    listener: (context, state) {
-                      if (state is AuthenticationSuccessState) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Homepage(),
-                          ),
-                        );
-                      } else if (state is AuthenticationFailureState) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text("Error"),
-                            content: Text(
-                                state.errorMessage ?? "Unknown error occurred"),
-                          ),
-                        );
-                      }
-                    },
-                    builder: (context, state) {
-                      return BasicAppButton(
-                        onPressed: () => _registerUser(context),
-                        title: "Create Account",
-                        height: 80,
+                  BasicAppButton(
+                    onPressed: () async {
+                      var result = await sl<SignupUseCase>().call(
+                          params: CreateUserReq(
+                        fullName: fullNameController.text.toString(),
+                        email: emailController.text.toString(),
+                        password: passwordController.text.toString(),
+                      ));
+                      result.fold(
+                        (l) {
+                          var snackbar = SnackBar(content: Text(l));
+                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                        },
+                        (r) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                                builder: (BuildContext context) => Homepage()),
+                            (route) => false,
+                          );
+                        },
                       );
                     },
+                    title: "Create Account",
+                    height: 80,
                   ),
                   const SizedBox(
                     height: 30,

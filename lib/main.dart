@@ -6,9 +6,10 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:spotify_clone/core/configs/theme/app_theme.dart';
 import 'package:spotify_clone/firebase_options.dart';
-import 'package:spotify_clone/presentation/mode/bloc/authentication_bloc.dart';
+import 'package:spotify_clone/presentation/authentication/bloc/authentication_bloc.dart';
 import 'package:spotify_clone/presentation/mode/bloc/theme_cubit.dart';
 import 'package:spotify_clone/presentation/splash/pages/splash.dart';
+import 'package:spotify_clone/serviceLocator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await initializeDependencies();
   runApp(const MyApp());
 }
 
@@ -35,9 +37,6 @@ class MyApp extends StatelessWidget {
           create: (_) => ThemeCubit(),
         ),
         // Provide AuthenticationBloc for authentication
-        BlocProvider(
-          create: (_) => AuthenticationBloc(),
-        ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, mode) => MaterialApp(
