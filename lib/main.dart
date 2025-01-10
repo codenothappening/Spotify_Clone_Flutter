@@ -6,7 +6,7 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:spotify_clone/core/configs/theme/app_theme.dart';
 import 'package:spotify_clone/firebase_options.dart';
-import 'package:spotify_clone/presentation/authentication/bloc/authentication_bloc.dart';
+import 'package:spotify_clone/presentation/home/pages/homepage.dart';
 import 'package:spotify_clone/presentation/mode/bloc/theme_cubit.dart';
 import 'package:spotify_clone/presentation/splash/pages/splash.dart';
 import 'package:spotify_clone/serviceLocator.dart';
@@ -45,6 +45,7 @@ class MyApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: mode,
           home: const SplashPage(),
+          // home: Homepage(),
           // home: ChooseMode(),
         ),
       ),

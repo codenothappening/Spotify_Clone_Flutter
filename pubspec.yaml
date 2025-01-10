@@ -42,7 +42,19 @@ dependencies:
   firebase_auth: ^5.3.4
   get_it: ^8.0.3
   dartz: ^0.10.1
-
+  spotify: ^0.13.7
+  audioplayers: ^6.1.0
+  palette_generator: ^0.3.3+5
+  youtube_explode_dart: ^2.3.6
+  audio_video_progress_bar: ^2.0.3
+  scrollable_positioned_list: ^0.3.8
+  http: ^1.2.2
+  intl: ^0.20.1
+  just_audio: ^0.9.42
+  flutter_dotenv: ^5.2.1
+  marquee: ^2.3.0
+  text_scroll: ^0.2.0
+  auto_scroll_text: ^0.0.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

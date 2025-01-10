@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/src/widgets/image.dart' as image;
 import 'package:flutter_svg/svg.dart';
+
 import 'package:spotify_clone/common/helpers/is_dark_mode.dart';
 import 'package:spotify_clone/core/configs/assets/app_images.dart';
 import 'package:spotify_clone/core/configs/assets/app_vectors.dart';
-import 'package:spotify_clone/presentation/authentication/pages/SigninPage.dart';
+import 'package:spotify_clone/data/api/spotifyapi.dart';
+import 'package:spotify_clone/presentation/home/widgets/artist_card.dart';
+
+import 'package:spotify_clone/presentation/home/widgets/card.dart';
+import 'package:spotify_clone/presentation/player/music_player.dart';
 
 import '../../../core/configs/theme/app_color.dart';
 
@@ -17,11 +23,18 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late Future<List<Map<String, String>>> _albumsFuture;
+
+  late Future<List<Map<String, String>>> _topArtists;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _albumsFuture = Spotifyapi().fetchAlbums();
+    // _topArtists = Spotifyapi().fetchTopArtists();
+    _topArtists = Spotifyapi().fetchTopArtistsInNepal();
+    // _topArtists = Spotifyapi().fetchNepaliArtists();
   }
 
   @override
@@ -59,13 +72,154 @@ class _HomepageState extends State<Homepage>
                     ),
                   ],
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _homeTopCard(),
-                    _tabs(),
-                  ],
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _homeTopCard(),
+                        _tabs(),
+                        SizedBox(
+                          height: 300,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: FutureBuilder<List<Map<String, String>>>(
+                                  future: _albumsFuture,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    } else if (snapshot.hasError) {
+                                      return const Center(
+                                        child: Text(
+                                          'Failed to load data',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      );
+                                    } else if (snapshot.hasData &&
+                                        snapshot.data!.isEmpty) {
+                                      return const Center(
+                                          child: Text('No data found.'));
+                                    }
+
+                                    final albums = snapshot.data!;
+                                    return ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: albums.length,
+                                      itemBuilder: (context, index) {
+                                        final album = albums[index];
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            right: 16.0,
+                                          ),
+                                          child: CardWidget(
+                                            imageUrl: album['imageUrl']!,
+                                            title: album['title']!,
+                                            subtitle: album['subtitle']!,
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      MusicPlayer(
+                                                    title: album['title'] ?? "",
+                                                    subtitle:
+                                                        album['subtitle'] ?? "",
+                                                    imageUrl:
+                                                        album['imageUrl'] ?? "",
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 25,
+                        ),
+                        Container(
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            "Top Artists",
+                            style: TextStyle(
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 25,
+                        ),
+                        SizedBox(
+                          height: 150,
+                          child: FutureBuilder<List<Map<String, String>>>(
+                              future: _topArtists,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                } else if (snapshot.hasError) {
+                                  return const Center(
+                                    child: Text(
+                                      'Failed to load data',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  );
+                                } else if (snapshot.hasData &&
+                                    snapshot.data!.isEmpty) {
+                                  return const Center(
+                                      child: Text('No data found.'));
+                                }
+
+                                final topArtists = snapshot.data!;
+                                return ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: topArtists.length,
+                                  itemBuilder: (context, index) {
+                                    final topArtist = topArtists[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 16.0,
+                                      ),
+                                      child: ArtistCard(
+                                        artistImageUrl: topArtist['imageUrl'] ??
+                                            "https://via.placeholder.com/100",
+                                        title: topArtist['name'] ??
+                                            "Unknown Artist",
+                                        onTap: () {},
+                                      ),
+                                    );
+                                  },
+                                );
+                              }),
+                        ),
+                        SizedBox(
+                          height: 25,
+                        ),
+                        Container(
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            "Your Mood",
+                            style: TextStyle(
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -134,7 +288,7 @@ class _HomepageState extends State<Homepage>
                   topRight: Radius.circular(30),
                   bottomRight: Radius.circular(30),
                 ),
-                child: Image.asset(
+                child: image.Image.asset(
                   AppImages.homePageTop,
                   fit: BoxFit.cover, // Make the image fill the space
                   // Set width for alignment
@@ -156,11 +310,11 @@ class _HomepageState extends State<Homepage>
       labelColor: context.isDarkMode ? Colors.white : Colors.black,
       indicatorColor: AppColor.primary,
       indicatorSize: TabBarIndicatorSize.label,
-      padding: EdgeInsets.symmetric(vertical: 40),
+      padding: const EdgeInsets.symmetric(vertical: 40),
       dividerColor: Colors.transparent,
       tabs: const [
         Text(
-          "News",
+          "New",
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 19,
